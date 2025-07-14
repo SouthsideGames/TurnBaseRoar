@@ -15,27 +15,33 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject settingsPanel;
     [SerializeField] private GameObject collectionPanel;
 
-    public void ShowMainMenuPanel()     => ShowPanel(mainMenuPanel);
-    public void ShowShopPanel()         => ShowPanel(shopPanel);
-    public void ShowBattlePanel()       => ShowPanel(battlePanel);
-    public void ShowLeaderboardPanel()  => ShowPanel(leaderboardPanel);
-    public void ShowMissionsPanel()     => ShowPanel(missionsPanel);
+    public void ShowMainMenuPanel() => ShowPanel(mainMenuPanel);
+    public void ShowShopPanel() => ShowPanel(shopPanel);
+    public void ShowLeaderboardPanel() => ShowPanel(leaderboardPanel);
+    public void ShowMissionsPanel() => ShowPanel(missionsPanel);
     public void ShowAchievementsPanel() => ShowPanel(achievementsPanel);
-    public void ShowInboxPanel()        => ShowPanel(inboxPanel);
-    public void ShowSettingsPanel()     => ShowPanel(settingsPanel);
+    public void ShowInboxPanel() => ShowPanel(inboxPanel);
+    public void ShowSettingsPanel() => ShowPanel(settingsPanel);
     public void ShowCollectionPanel() => ShowPanel(collectionPanel);
-    
+
+    public void ShowBattlePanel()
+    {
+        ShowPanel(battlePanel);
+
+        // Always clear the BattlePanel UI
+        if (BattlePanelManager.Instance != null)
+        {
+            BattlePanelManager.Instance.HideAllPanels();
+        }
+
+    }
+
     private void Awake()
     {
         if (Instance == null)
-        {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
         else
-        {
             Destroy(gameObject);
-        }
     }
 
     public void ShowPanel(GameObject panelToShow)
@@ -59,5 +65,16 @@ public class UIManager : MonoBehaviour
         settingsPanel?.SetActive(false);
         collectionPanel?.SetActive(false);
     }
+    
+    public void OnBattleButtonPressed()
+    {
+        if (BattleManager.Instance != null)
+        {
+            BattleManager.Instance.RestartGame();
+        }
+
+        ShowBattlePanel();
+    }
+
 
 }

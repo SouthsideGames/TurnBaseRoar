@@ -20,5 +20,9 @@ MonoBehaviour:
   baseAttack: 20
   baseDefense: 10
   baseSpeed: 15
+  attackName: Power Pop
+  successRate: 0.9
+  critChance: 10
+  critMultiplier: 2
   evolutionLevel: 3
   evolutionForm: {fileID: 11400000, guid: 6ac4b76bbbad740abb0c891b3e9cda6e, type: 2}

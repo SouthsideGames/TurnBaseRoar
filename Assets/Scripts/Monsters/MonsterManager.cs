@@ -19,16 +19,10 @@ public class MonsterManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null)
-        {
+        if(Instance == null)
             Instance = this;
-            DontDestroyOnLoad(gameObject);
-            LoadData();
-        }
         else
-        {
             Destroy(gameObject);
-        }
     }
 
     public void AddMonster(MonsterDataSO newMonsterData)

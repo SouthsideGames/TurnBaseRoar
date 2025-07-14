@@ -8,24 +8,16 @@ public class RewardSystem : MonoBehaviour
     [SerializeField] private int coinsPerEnemyKill = 5;
     [SerializeField] private int waveClearBonus = 50;
 
+    public int TotalCoinsEarned { get; private set; } = 0;
+
     private void Awake()
     {
         if (Instance == null)
-        {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
         else
-        {
             Destroy(gameObject);
-        }
     }
 
-    /// <summary>
-    /// Calculates coins earned this wave.
-    /// </summary>
-    /// <param name="enemiesKilled">How many enemies were defeated.</param>
-    /// <returns>Total coins earned.</returns>
     public int CalculateWaveRewards(int enemiesKilled)
     {
         int earned = (enemiesKilled * coinsPerEnemyKill) + waveClearBonus;
@@ -33,11 +25,10 @@ public class RewardSystem : MonoBehaviour
         return earned;
     }
 
-    /// <summary>
-    /// Adds coins to player's saved total.
-    /// </summary>
     public void GrantRewards(int coins)
     {
+        TotalCoinsEarned += coins;  // ✅ Track total earned in this run
+
         int currentCoins = SaveManager.Instance.LoadCoins();
         currentCoins += coins;
         SaveManager.Instance.SaveCoins(currentCoins);
@@ -45,11 +36,14 @@ public class RewardSystem : MonoBehaviour
         Debug.Log($"RewardSystem: Granted {coins} coins. New total: {currentCoins}");
     }
 
-    /// <summary>
-    /// Gets current total coins from save.
-    /// </summary>
+
     public int GetPlayerCoins()
     {
         return SaveManager.Instance.LoadCoins();
+    }
+    
+    public void ResetRunRewards()
+    {
+        TotalCoinsEarned = 0;
     }
 }

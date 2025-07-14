@@ -5,10 +5,6 @@ using UnityEngine.UI;
 
 public class MonsterController : MonoBehaviour
 {
-    [Header("Settings")]
-    [SerializeField] private float attackRange = 2f;
-    [SerializeField] private float attackInterval = 1.5f;
-
     [Header("Runtime Info")]
     public MonsterDataSO data;
     public bool isPlayer;
@@ -18,38 +14,17 @@ public class MonsterController : MonoBehaviour
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private Slider healthSlider;
 
+    [SerializeField] private int slotIndex;
 
     private int currentHP;
-    private float attackCooldown;
-
-    private void Start()
-    {
-        attackCooldown = attackInterval;
-    }
-
-    private void Update()
-    {
-        if (data == null) return;
-
-        attackCooldown -= Time.deltaTime;
-        if (attackCooldown <= 0f)
-        {
-            MonsterController target = FindNearestTarget();
-            if (target != null)
-            {
-                TryAttack(target);
-                attackCooldown = attackInterval;
-            }
-        }
-    }
-
-
+    private int currentMana;
+  
     public void Setup(MonsterDataSO monsterData, bool isPlayerTeam)
     {
         data = monsterData;
         isPlayer = isPlayerTeam;
         currentHP = data.baseHP;
-
+        currentMana = 0;
         Debug.Log($"MonsterController: {data.monsterName} spawned. Team: {(isPlayer ? "Player" : "Enemy")} with {data.baseHP} HP and {data.baseAttack} Attack.");
 
         // Set icon and name in UI
@@ -68,10 +43,11 @@ public class MonsterController : MonoBehaviour
     }
 
 
-    public void TakeDamage(int amount)
+    public void TakeDamage(int amount, bool isCrit = false)
     {
         currentHP -= amount;
-        Debug.Log($"{data.monsterName} took {amount} damage. HP left: {currentHP}");
+
+        BattlePanelManager.Instance.AppendCombatLog($"{data.monsterName} takes {amount} damage{(isCrit ? " (CRIT!)" : "")}. Remaining HP: {currentHP}");
 
         UpdateHealthBar();
 
@@ -83,32 +59,69 @@ public class MonsterController : MonoBehaviour
 
 
 
-    private void TryAttack(MonsterController target)
+    public void Attack(MonsterController target)
     {
-        // Roll for hit success
-        if (Random.value > data.successRate)
+        if (target == null || !target.IsAlive()) return;
+
+        BattlePanelManager.Instance.AppendCombatLog($"{data.monsterName}'s turn!");
+
+        // 1️⃣ Mana regeneration
+        currentMana = Mathf.Min(currentMana + data.manaRegenPerTurn, data.maxMana);
+        BattlePanelManager.Instance.AppendCombatLog($"{data.monsterName} regenerates mana to {currentMana}/{data.maxMana}.");
+
+        // 2️⃣ Decide if using ability
+        bool canUseAbility = currentMana >= data.abilityManaCost;
+        bool wantsToUseAbility = Random.value < 0.5f;
+
+        if (canUseAbility && wantsToUseAbility)
         {
-            Debug.Log($"{data.monsterName} missed!");
-            BattlePanelManager.Instance.AppendCombatLog($"{data.monsterName} tried to attack {target.data.monsterName} but missed!");
+            UseAbility(target);
+            currentMana -= data.abilityManaCost;
             return;
         }
 
-        // Determine damage
-        int damage = data.baseAttack;
-        bool isCrit = Random.Range(0, 100) < data.critChance;
-        if (isCrit)
+        // 3️⃣ Else, do regular attack
+        PerformBasicAttack(target);
+    }
+
+    private void PerformBasicAttack(MonsterController target)
+    {
+        BattlePanelManager.Instance.AppendCombatLog($"{data.monsterName} attacks {target.data.monsterName}!");
+
+        // Simple accuracy check (no evasion)
+        if (Random.value >= data.baseAccuracy)
         {
-            damage *= data.critMultiplier;
+            BattlePanelManager.Instance.AppendCombatLog($"{data.monsterName}'s attack missed!");
+            return;
         }
 
-        // Apply damage
-        target.TakeDamage(damage);
+        // Crit check
+        bool isCrit = CheckCrit(data.critChance, target.data.critResist);
 
-        // Log
-        string critText = isCrit ? " (Critical!)" : "";
-        Debug.Log($"{data.monsterName} hit {target.data.monsterName} for {damage} damage{critText}.");
-        BattlePanelManager.Instance.AppendCombatLog($"{data.monsterName} attacked {target.data.monsterName} for {damage} damage{critText}.");
+        // Damage calculation
+        float damage = CalculateDamage(
+            data.baseAttack,
+            target.data.baseDefense,
+            isCrit,
+            data.critMultiplier
+        );
+
+        target.TakeDamage(Mathf.RoundToInt(damage), isCrit);
     }
+
+
+    private void UseAbility(MonsterController target)
+    {
+        BattlePanelManager.Instance.AppendCombatLog($"{data.monsterName} uses special ability: {data.abilityDescription}");
+
+        // Placeholder effect: 1.5x attack ignoring crit
+        float abilityDamage = data.baseAttack * 1.5f;
+
+        float finalDamage = abilityDamage * Mathf.Clamp01(1f - (target.data.baseDefense / 100f));
+        target.TakeDamage(Mathf.RoundToInt(finalDamage), isCrit: false);
+    }
+
+
 
 
 
@@ -124,29 +137,6 @@ public class MonsterController : MonoBehaviour
         Destroy(gameObject);
     }
 
-    private MonsterController FindNearestTarget()
-    {
-        // Very simple targeting: find any enemy in scene
-        MonsterController[] allMonsters = FindObjectsOfType<MonsterController>();
-        MonsterController closest = null;
-        float closestDist = Mathf.Infinity;
-
-        foreach (var other in allMonsters)
-        {
-            if (other == this) continue;
-            if (other.isPlayer == this.isPlayer) continue; // skip same team
-
-            float dist = Vector3.Distance(transform.position, other.transform.position);
-            if (dist < closestDist)
-            {
-                closest = other;
-                closestDist = dist;
-            }
-        }
-
-        return closest;
-    }
-
     private void UpdateHealthBar()
     {
         if (healthSlider != null)
@@ -154,6 +144,29 @@ public class MonsterController : MonoBehaviour
             healthSlider.value = currentHP;
         }
     }
+
+    public bool IsAlive() => currentHP > 0;
+
+    private bool CheckCrit(int attackerCritChance, int defenderCritResist)
+    {
+        int effectiveCritChance = Mathf.Max(0, attackerCritChance - defenderCritResist);
+        return Random.Range(0, 100) < effectiveCritChance;
+    }
+
+    private float CalculateDamage(float attackPower, float defensePercent, bool isCrit, int critMultiplier)
+    {
+        float defenseFactor = Mathf.Clamp01(1f - (defensePercent / 100f));
+        float baseDamage = attackPower * defenseFactor;
+
+        if (isCrit)
+            baseDamage *= critMultiplier;
+
+        return baseDamage;
+    }
+
+
+    public void SetSlotIndex(int index) => slotIndex = index;
+    public int GetSlotIndex() => slotIndex;
 
 
 }

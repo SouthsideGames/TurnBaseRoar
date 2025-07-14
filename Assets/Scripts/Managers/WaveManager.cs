@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 
 public class WaveManager : MonoBehaviour
@@ -12,33 +13,28 @@ public class WaveManager : MonoBehaviour
     [SerializeField] private BattlePanelManager battlePanelManager;
 
     [SerializeField] private MonsterLibrary monsterLibrary;
+    public bool IsWaveRunning { get; private set; }
 
     private float timer;
-    private bool isWaveRunning = false;
     private int enemiesKilled = 0;
 
     private void Awake()
     {
-        if (Instance == null)
-        {
+        if(Instance == null)
             Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
         else
-        {
             Destroy(gameObject);
-        }
     }
 
 
     private void Update()
     {
-        if (!isWaveRunning) return;
+        if (!IsWaveRunning) return;
 
         timer -= Time.deltaTime;
         battlePanelManager.UpdateTimer(timer);
 
-        if (timer <= 0f)
+        if (timer <= 0f || !HasLivingPlayerMonsters())
         {
             EndWave();
         }
@@ -47,19 +43,24 @@ public class WaveManager : MonoBehaviour
     public void ResetTimer()
     {
         timer = waveDuration;
-        isWaveRunning = false;
+        IsWaveRunning = false;
         battlePanelManager.UpdateTimer(timer);
     }
 
     public void StartWave()
     {
         Debug.Log("WaveManager: Starting wave!");
-        isWaveRunning = true;
+        IsWaveRunning = true;
         timer = waveDuration;
         battlePanelManager.UpdateTimer(timer);
-
         SpawnEnemyWave();
     }
+
+    private bool HasLivingPlayerMonsters()
+    {
+        return MonsterSpawner.Instance.GetPlayerMonsters().Any(m => m.IsAlive());
+    }
+
 
     private void SpawnEnemyWave()
     {
@@ -75,16 +76,22 @@ public class WaveManager : MonoBehaviour
         }
     }
 
-    private void EndWave()
+    public void EndWave()
     {
         Debug.Log("WaveManager: Wave time over!");
 
-        isWaveRunning = false;
+        IsWaveRunning = false;
 
         int coinsEarned = RewardSystem.Instance.CalculateWaveRewards(enemiesKilled);
-        enemiesKilled = 0; // reset for next wave
+        enemiesKilled = 0;
 
         BattleManager.Instance.EnterResultsPhase(coinsEarned);
+        
+        if (!HasLivingPlayerMonsters())
+        {
+            BattleManager.Instance.EnterGameOver(RewardSystem.Instance.TotalCoinsEarned);
+            return;
+        }
     }
 
 

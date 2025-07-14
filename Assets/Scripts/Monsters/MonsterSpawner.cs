@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class MonsterSpawner : MonoBehaviour
 {
+    public static MonsterSpawner Instance { get; private set; }
+
     [Header("Prefab to Spawn")]
     [SerializeField] private GameObject monsterPrefab;
 
@@ -12,10 +14,14 @@ public class MonsterSpawner : MonoBehaviour
 
     private List<GameObject> spawnedMonsters = new List<GameObject>();
 
-    /// <summary>
-    /// Clears all monsters from both grids.
-    /// Call this between waves.
-    /// </summary>
+    private void Awake()
+    {
+        if(Instance == null)
+            Instance = this;
+        else
+            Destroy(gameObject);
+    }
+
     public void ClearAllMonsters()
     {
         foreach (var monster in spawnedMonsters)
@@ -25,37 +31,30 @@ public class MonsterSpawner : MonoBehaviour
         spawnedMonsters.Clear();
     }
 
-    /// <summary>
-    /// Spawns player's selected monsters in their grid.
-    /// </summary>
     public void SpawnPlayerMonsters(List<MonsterDataSO> playerPicks)
     {
-        foreach (var data in playerPicks)
+        for (int i = 0; i < playerPicks.Count; i++)
         {
             GameObject newMonster = Instantiate(monsterPrefab, playerSideGrid);
             MonsterController controller = newMonster.GetComponent<MonsterController>();
-            controller.Setup(data, isPlayerTeam: true);
+            controller.Setup(playerPicks[i], true);
+            controller.SetSlotIndex(i);
             spawnedMonsters.Add(newMonster);
         }
     }
 
-    /// <summary>
-    /// Spawns enemy's selected monsters in their grid.
-    /// </summary>
     public void SpawnEnemyMonsters(List<MonsterDataSO> enemyPicks)
     {
-        foreach (var data in enemyPicks)
+        for (int i = 0; i < enemyPicks.Count; i++)
         {
             GameObject newMonster = Instantiate(monsterPrefab, enemySideGrid);
             MonsterController controller = newMonster.GetComponent<MonsterController>();
-            controller.Setup(data, isPlayerTeam: false);
+            controller.Setup(enemyPicks[i], false);
+            controller.SetSlotIndex(i);
             spawnedMonsters.Add(newMonster);
         }
     }
 
-    /// <summary>
-    /// Spawns a single enemy monster in the enemy grid.
-    /// </summary>
     public void SpawnEnemyMonster(MonsterDataSO data)
     {
         GameObject newMonster = Instantiate(monsterPrefab, enemySideGrid);
@@ -63,5 +62,36 @@ public class MonsterSpawner : MonoBehaviour
         controller.Setup(data, isPlayerTeam: false);
         spawnedMonsters.Add(newMonster);
     }
+
+    public List<MonsterController> GetPlayerMonsters()
+    {
+        List<MonsterController> playerMonsters = new List<MonsterController>();
+        foreach (var monsterObj in spawnedMonsters)
+        {
+            if (monsterObj == null) continue;
+            var controller = monsterObj.GetComponent<MonsterController>();
+            if (controller != null && controller.isPlayer)
+            {
+                playerMonsters.Add(controller);
+            }
+        }
+        return playerMonsters;
+    }
+
+    public List<MonsterController> GetEnemyMonsters()
+    {
+        List<MonsterController> enemyMonsters = new List<MonsterController>();
+        foreach (var monsterObj in spawnedMonsters)
+        {
+            if (monsterObj == null) continue;
+            var controller = monsterObj.GetComponent<MonsterController>();
+            if (controller != null && !controller.isPlayer)
+            {
+                enemyMonsters.Add(controller);
+            }
+        }
+        return enemyMonsters;
+    }
+
 
 }

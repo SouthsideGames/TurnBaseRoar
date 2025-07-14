@@ -16,10 +16,13 @@ MonoBehaviour:
   monsterName: Aquapup
   type: 1
   icon: {fileID: 21300000, guid: 885fa9cfb2c1643aab40f58b1d114a64, type: 3}
-  baseHP: 0
-  baseAttack: 0
-  baseDefense: 0
-  baseSpeed: 0
-  attackName: 
+  baseHP: 500
+  baseAttack: 10
+  baseDefense: 100
+  baseSpeed: 10
+  attackName: Bubble
+  successRate: 0.9
+  critChance: 10
+  critMultiplier: 2
   evolutionLevel: 0
   evolutionForm: {fileID: 0}

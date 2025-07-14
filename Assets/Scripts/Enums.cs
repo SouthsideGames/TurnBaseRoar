@@ -27,3 +27,9 @@ public enum BattlePhase
     Results
 }
 
+public enum DraftTurn
+{
+    PlayerFirst,
+    EnemyFirst
+}
+

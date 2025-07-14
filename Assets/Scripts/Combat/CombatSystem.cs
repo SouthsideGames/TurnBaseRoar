@@ -1,5 +1,7 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class CombatSystem : MonoBehaviour
 {
@@ -10,93 +12,102 @@ public class CombatSystem : MonoBehaviour
     [SerializeField] private MonsterSpawner monsterSpawner;
     [SerializeField] private MonsterManager monsterManager;
 
-    private bool isCombatActive = false;
-
     private void Awake()
     {
-        if (Instance == null)
-        {
+        if(Instance == null)
             Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
         else
-        {
             Destroy(gameObject);
-        }
     }
 
     public void StartCombat()
     {
-        Debug.Log("CombatSystem: Starting combat phase.");
-        isCombatActive = true;
+        Debug.Log("CombatSystem: Preparing battle...");
 
-        // Clear any old monsters
+        // Clear old monsters
         monsterSpawner.ClearAllMonsters();
 
-        // Spawn player and enemy wave picks
-        monsterSpawner.SpawnPlayerMonsters(new System.Collections.Generic.List<MonsterDataSO>(monsterManager.PlayerWavePicks));
-        monsterSpawner.SpawnEnemyMonsters(new System.Collections.Generic.List<MonsterDataSO>(monsterManager.EnemyWavePicks));
+        // Spawn new monsters for this wave
+        monsterSpawner.SpawnPlayerMonsters(monsterManager.PlayerWavePicks.ToList());
+        monsterSpawner.SpawnEnemyMonsters(monsterManager.EnemyWavePicks.ToList());
 
-        // Start checking for combat completion
-        StartCoroutine(MonitorCombat());
+        Debug.Log("CombatSystem: Spawns complete. Starting turn loop...");
+
+        StartCoroutine(CombatRoutine());
     }
 
-    private IEnumerator MonitorCombat()
+
+    private IEnumerator CombatRoutine()
     {
-        Debug.Log("CombatSystem: Monitoring combat...");
+        Debug.Log("CombatSystem: Starting combat loop while wave is active.");
 
-        yield return new WaitForSeconds(1f); // optional delay before checking
-
-        while (isCombatActive)
+        while (WaveManager.Instance.IsWaveRunning)
         {
-            // Check if player has any monsters left
-            bool playerHasMonsters = HasAnyPlayerMonsters();
-            bool enemyHasMonsters = HasAnyEnemyMonsters();
+            // 1️⃣ Get current alive monsters
+            var playerMonsters = MonsterSpawner.Instance.GetPlayerMonsters()
+                .Where(m => m != null && m.IsAlive())
+                .ToList();
 
-            if (!playerHasMonsters || !enemyHasMonsters)
+            var enemyMonsters = MonsterSpawner.Instance.GetEnemyMonsters()
+                .Where(m => m != null && m.IsAlive())
+                .ToList();
+
+            if (playerMonsters.Count == 0 || enemyMonsters.Count == 0)
             {
-                Debug.Log("CombatSystem: Combat over.");
-                isCombatActive = false;
-                EndCombat();
-                yield break;
+                Debug.Log("CombatSystem: No opponents left alive.");
+                yield return new WaitForSeconds(0.5f);
+                continue;
             }
 
-            yield return new WaitForSeconds(1f);
+            // 2️⃣ Build turn order
+            List<MonsterController> turnOrder = new List<MonsterController>();
+            turnOrder.AddRange(playerMonsters);
+            turnOrder.AddRange(enemyMonsters);
+
+            turnOrder = turnOrder
+                .OrderByDescending(m => m.data.baseSpeed)
+                .ThenBy(x => Random.value)
+                .ToList();
+
+            // 3️⃣ Process turn order
+            foreach (var attacker in turnOrder)
+            {
+                if (!WaveManager.Instance.IsWaveRunning) yield break;
+
+                if (!attacker.IsAlive()) continue;
+
+                var enemyList = attacker.isPlayer ? enemyMonsters : playerMonsters;
+                MonsterController target = FindValidTarget(enemyList, attacker.GetSlotIndex());
+
+                if (target != null && target.IsAlive())
+                {
+                    attacker.Attack(target);
+                }
+                else
+                {
+                    Debug.Log($"{attacker.data.monsterName} had no valid target and skipped turn.");
+                    BattlePanelManager.Instance.AppendCombatLog($"{attacker.data.monsterName} had no valid target and skipped turn.");
+                }
+
+                yield return new WaitForSeconds(0.5f);
+            }
+
+            yield return new WaitForSeconds(2.0f);
         }
+
+        Debug.Log("CombatSystem: Wave timer ended, ending combat.");
+        WaveManager.Instance.EndWave();
     }
 
-    private bool HasAnyPlayerMonsters()
+
+
+    private MonsterController FindValidTarget(List<MonsterController> enemyList, int startIndex)
     {
-        foreach (var monster in FindObjectsOfType<MonsterController>())
+        for (int i = startIndex; i < enemyList.Count; i++)
         {
-            if (monster.isPlayer) return true;
+            if (enemyList[i] != null && enemyList[i].IsAlive())
+                return enemyList[i];
         }
-        return false;
-    }
-
-    private bool HasAnyEnemyMonsters()
-    {
-        foreach (var monster in FindObjectsOfType<MonsterController>())
-        {
-            if (!monster.isPlayer) return true;
-        }
-        return false;
-    }
-
-    private void EndCombat()
-    {
-        Debug.Log("CombatSystem: Ending combat phase.");
-
-        // Tell WaveManager to stop the timer
-        WaveManager.Instance.ResetTimer();
-
-        // Reward coins based on enemies killed
-        // WaveManager handles counting enemiesKilled during battle
-
-        int coinsEarned = RewardSystem.Instance.CalculateWaveRewards(WaveManager.Instance.GetEnemiesKilled());
-        RewardSystem.Instance.GrantRewards(coinsEarned);
-
-        // Notify BattleManager to show results
-        BattleManager.Instance.EnterResultsPhase(coinsEarned);
+        return null;
     }
 }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class BattleManager : MonoBehaviour
 {
@@ -23,23 +24,15 @@ public class BattleManager : MonoBehaviour
     private void Awake()
     {
         if (Instance == null)
-        {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
         else
-        {
             Destroy(gameObject);
-        }
     }
 
     private void Start()
     {
-        // Load coins from save
         playerCoins = SaveManager.Instance.LoadCoins();
         currentWave = startingWave;
-
-        EnterDraftPhase();
     }
 
     public void EnterDraftPhase()
@@ -51,9 +44,9 @@ public class BattleManager : MonoBehaviour
         battlePanelManager.UpdateWaveNumber(currentWave);
         battlePanelManager.UpdateCoins(playerCoins);
 
-        draftSystem.GenerateDraftChoices();
         waveManager.ResetTimer();
     }
+
 
     public void StartCombatPhase()
     {
@@ -79,10 +72,10 @@ public class BattleManager : MonoBehaviour
         battlePanelManager.ShowResultsPhaseUI(coinsEarned);
     }
 
-  public void ConfirmResultsAndContinue()
+    public void ConfirmResultsAndContinue()
     {
+        currentWave++;
         UIManager.Instance.ShowBattlePanel();
-        DraftSystem.Instance.GenerateDraftChoices();
     }
 
 
@@ -109,6 +102,26 @@ public class BattleManager : MonoBehaviour
     {
         return currentWave;
     }
+
+    public void EnterGameOver(int totalCoins)
+    {
+        currentPhase = BattlePhase.Results;
+        Debug.Log($"Game Over! Coins Earned: {totalCoins}");
+        MonsterSpawner.Instance.ClearAllMonsters();
+
+        // Show the game over screen with player's final team
+        battlePanelManager.ShowGameOverUI(totalCoins, new List<OwnedMonster>(MonsterManager.Instance.TeamMonsters));
+    }
+    
+    public void RestartGame()
+    {
+        Debug.Log("Restarting game from wave 1.");
+        currentWave = startingWave;
+        MonsterManager.Instance.ClearAllData();
+        RewardSystem.Instance.ResetRunRewards();
+        EnterDraftPhase();
+    }
+
 
     
 }
