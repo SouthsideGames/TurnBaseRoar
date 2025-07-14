@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34dfb07ba0e454f33b212b970e2f569f, type: 3}
+  m_Name: Emberdrake
+  m_EditorClassIdentifier: 
+  monsterID: emberdrake
+  monsterName: Emberdrake
+  type: 0
+  icon: {fileID: 21300000, guid: e864454be95b643148a59b2cce54c56c, type: 3}
+  baseHP: 0
+  baseAttack: 0
+  baseDefense: 0
+  baseSpeed: 0
+  evolutionLevel: 0
+  evolutionForm: {fileID: 0}
