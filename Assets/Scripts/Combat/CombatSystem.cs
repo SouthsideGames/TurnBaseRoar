@@ -11,10 +11,15 @@ public class CombatSystem : MonoBehaviour
     [SerializeField] private BattlePanelManager battlePanelManager;
     [SerializeField] private MonsterSpawner monsterSpawner;
     [SerializeField] private MonsterManager monsterManager;
+    [SerializeField] private bool isAutoMode = false;
+    [SerializeField] private bool isWaitingForNextInput = false;
+
+    private int currentTurn = 1;
+
 
     private void Awake()
     {
-        if(Instance == null)
+        if (Instance == null)
             Instance = this;
         else
             Destroy(gameObject);
@@ -23,6 +28,8 @@ public class CombatSystem : MonoBehaviour
     public void StartCombat()
     {
         Debug.Log("CombatSystem: Preparing battle...");
+
+        currentTurn = 1;
 
         // Clear old monsters
         monsterSpawner.ClearAllMonsters();
@@ -70,6 +77,8 @@ public class CombatSystem : MonoBehaviour
                 .ToList();
 
             // 3️⃣ Process turn order
+           battlePanelManager.AppendCombatLog($"--- Turn {currentTurn} ---");
+
             foreach (var attacker in turnOrder)
             {
                 if (!WaveManager.Instance.IsWaveRunning) yield break;
@@ -90,8 +99,22 @@ public class CombatSystem : MonoBehaviour
                 }
 
                 yield return new WaitForSeconds(0.5f);
+
+                if (!isAutoMode)
+                {
+                    isWaitingForNextInput = true;
+                    WaveManager.Instance.PauseTimer = true;
+
+                    while (isWaitingForNextInput)
+                    {
+                        yield return null;
+                    }
+
+                    WaveManager.Instance.PauseTimer = false;
+                }
             }
 
+            currentTurn++;
             yield return new WaitForSeconds(2.0f);
         }
 
@@ -110,4 +133,8 @@ public class CombatSystem : MonoBehaviour
         }
         return null;
     }
+    
+    public void SetAutoMode(bool isAuto) => isAutoMode = isAuto;
+
+    public void NextTurnPressed() =>isWaitingForNextInput = false;
 }

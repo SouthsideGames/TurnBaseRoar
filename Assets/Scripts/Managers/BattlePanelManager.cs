@@ -24,6 +24,8 @@ public class BattlePanelManager : MonoBehaviour
     [SerializeField] private Button mainMenuButton;
     [SerializeField] private Button restartButton;
     [SerializeField] private Button startDraftButton;
+    [SerializeField] private Button nextTurnButton;
+    [SerializeField] private Button autoToggleButton;
 
 
 
@@ -46,6 +48,8 @@ public class BattlePanelManager : MonoBehaviour
     [SerializeField] private Transform draftContentRoot;
     [SerializeField] private GameObject draftCardPrefab;
 
+    private bool isAuto = false;
+
     private void Awake()
     {
         if (Instance == null)
@@ -64,6 +68,8 @@ public class BattlePanelManager : MonoBehaviour
         mainMenuButton.onClick.AddListener(OnMainMenuPressed);
         restartButton.onClick.AddListener(OnRestartPressed);
         startDraftButton.onClick.AddListener(OnStartDraftPressed);
+        nextTurnButton.onClick.AddListener(OnNextTurnPressed);
+        autoToggleButton.onClick.AddListener(OnAutoTogglePressed);
     }
 
     private void OnMainMenuPressed()
@@ -239,6 +245,17 @@ public class BattlePanelManager : MonoBehaviour
     {
         if (draftContentRoot != null)
             draftContentRoot.gameObject.SetActive(false);
+    }
+
+    private void OnNextTurnPressed()
+    {
+        CombatSystem.Instance.NextTurnPressed();
+    }
+
+    private void OnAutoTogglePressed()
+    {
+        isAuto = !isAuto;
+        CombatSystem.Instance.SetAutoMode(isAuto);
     }
 
 

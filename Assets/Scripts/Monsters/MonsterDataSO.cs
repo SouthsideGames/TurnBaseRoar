@@ -20,6 +20,8 @@ public class MonsterDataSO : ScriptableObject
     [Header("Combat Stats")]
     [Range(0f, 1f)]
     public float baseAccuracy = 0.9f; // Chance to hit
+    [Range(0f, 1f)]
+    public float baseStatusResist = 0.9f;
     [Range(0, 100)]
     public int critChance = 10;       // % chance to crit
     public int critMultiplier = 2;    // Damage multiplier on crit

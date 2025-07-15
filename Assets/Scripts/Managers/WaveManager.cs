@@ -14,13 +14,14 @@ public class WaveManager : MonoBehaviour
 
     [SerializeField] private MonsterLibrary monsterLibrary;
     public bool IsWaveRunning { get; private set; }
+    public bool PauseTimer { get; set; } = false;
 
     private float timer;
     private int enemiesKilled = 0;
 
     private void Awake()
     {
-        if(Instance == null)
+        if (Instance == null)
             Instance = this;
         else
             Destroy(gameObject);
@@ -29,7 +30,7 @@ public class WaveManager : MonoBehaviour
 
     private void Update()
     {
-        if (!IsWaveRunning) return;
+        if (!IsWaveRunning || PauseTimer) return;
 
         timer -= Time.deltaTime;
         battlePanelManager.UpdateTimer(timer);
