@@ -33,3 +33,34 @@ public enum DraftTurn
     EnemyFirst
 }
 
+public enum PassiveEffectType
+{
+    HealSelfPerTurn,
+    TeamHealPerTurn,
+    BurnOnHit,
+    MultiHit,
+    FreezeChance,
+    ReduceDefense,
+    Lifesteal,
+    ImmuneToCrit,
+    ImmuneToStatus,
+    BonusFirstAttack,
+    UntargetableOnHit,
+    DamageRamp,
+    ReduceStatusResistance,
+    AoEHitWithRecoil,
+    ReverseSpeedOrder,
+    None
+}
+
+public enum StatusEffectType
+{
+    DamageOverTime,
+    Freeze,
+    Burn,
+    HealOverTime,
+    DefenseDown,
+    Other
+}
+
+

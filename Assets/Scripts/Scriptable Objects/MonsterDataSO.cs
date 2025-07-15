@@ -6,7 +6,7 @@ public class MonsterDataSO : ScriptableObject
     [Header("Basic Info")]
     public string monsterID;
     public string monsterName;
-    public MonsterType type;
+    public TypeSO monsterType;
     public Sprite icon;
 
     [Header("Base Stats")]

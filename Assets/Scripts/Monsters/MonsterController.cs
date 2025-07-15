@@ -11,10 +11,15 @@ public class MonsterController : MonoBehaviour
 
     [Header("UI Elements")]
     [SerializeField] private Image iconImage;
+    [SerializeField] private Image typeImage;
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private Slider healthSlider;
 
+    [Header("References")]
+    public PassiveEffectData currentPassive;
     [SerializeField] private int slotIndex;
+    private bool isImmuneToStatus = false;
+    private bool isImmuneToCrit = false;
 
     private int currentHP;
     private int currentMana;
@@ -31,6 +36,9 @@ public class MonsterController : MonoBehaviour
         if (iconImage != null && data.icon != null)
             iconImage.sprite = data.icon;
 
+        if (typeImage != null && data.monsterType.iconSprite != null)
+            typeImage.sprite = data.monsterType.iconSprite;
+
         if (nameText != null)
             nameText.text = data.monsterName;
 
@@ -39,6 +47,11 @@ public class MonsterController : MonoBehaviour
         {
             healthSlider.maxValue = data.baseHP;
             healthSlider.value = currentHP;
+        }
+
+        if (currentPassive != null && currentPassive.effectType == PassiveEffectType.HealSelfPerTurn)
+        {
+            Heal((int)currentPassive.value1 * Time.deltaTime);
         }
     }
 
@@ -158,10 +171,43 @@ public class MonsterController : MonoBehaviour
         float defenseFactor = Mathf.Clamp01(1f - (defensePercent / 100f));
         float baseDamage = attackPower * defenseFactor;
 
-        if (isCrit)
+        if (isCrit && !isImmuneToCrit)
             baseDamage *= critMultiplier;
 
         return baseDamage;
+    }
+
+    public void RegisterPassive(PassiveEffectData passive)
+    {
+        currentPassive = passive;
+
+        if (passive == null) return;
+
+        Debug.Log($"{data.monsterName} registered passive: {passive.effectType}");
+
+        // Example one-time setup
+        switch (passive.effectType)
+        {
+            case PassiveEffectType.ImmuneToStatus:
+                // Set flag on this monster
+                isImmuneToStatus = true;
+                break;
+
+            case PassiveEffectType.ImmuneToCrit:
+                isImmuneToCrit = true;
+                break;
+
+            // Add more setup for other types as needed
+        }
+    }
+
+    private void Heal(float amount)
+    {
+        currentHP += Mathf.CeilToInt(amount);
+        if (currentHP > data.baseHP)
+            currentHP = data.baseHP;
+
+        UpdateHealthBar();
     }
 
 

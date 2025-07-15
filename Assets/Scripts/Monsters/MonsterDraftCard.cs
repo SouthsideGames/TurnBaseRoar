@@ -6,6 +6,7 @@ public class MonsterDraftCard : MonoBehaviour
 {
     [Header("UI Elements")]
     [SerializeField] private Image iconImage;
+    [SerializeField] private Image typeImage;
     [SerializeField] private TMP_Text nameText;
 
     private MonsterDataSO data;
@@ -23,6 +24,9 @@ public class MonsterDraftCard : MonoBehaviour
         {
             iconImage.sprite = data.icon;
         }
+
+        if (typeImage != null && data.monsterType.iconSprite != null)
+            typeImage.sprite = data.monsterType.iconSprite;
 
         if (nameText != null)
         {

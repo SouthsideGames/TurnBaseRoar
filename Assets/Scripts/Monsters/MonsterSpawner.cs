@@ -33,24 +33,26 @@ public class MonsterSpawner : MonoBehaviour
 
     public void SpawnPlayerMonsters(List<MonsterDataSO> playerPicks)
     {
-        for (int i = 0; i < playerPicks.Count; i++)
+        foreach (var data in playerPicks)
         {
             GameObject newMonster = Instantiate(monsterPrefab, playerSideGrid);
             MonsterController controller = newMonster.GetComponent<MonsterController>();
-            controller.Setup(playerPicks[i], true);
-            controller.SetSlotIndex(i);
+            controller.Setup(data, isPlayerTeam: true);
+
+            controller.GetComponent<MonsterTypeHandler>().Initialize(data.monsterType);
+
             spawnedMonsters.Add(newMonster);
         }
     }
 
     public void SpawnEnemyMonsters(List<MonsterDataSO> enemyPicks)
     {
-        for (int i = 0; i < enemyPicks.Count; i++)
+        foreach (var data in enemyPicks)
         {
             GameObject newMonster = Instantiate(monsterPrefab, enemySideGrid);
             MonsterController controller = newMonster.GetComponent<MonsterController>();
-            controller.Setup(enemyPicks[i], false);
-            controller.SetSlotIndex(i);
+            controller.Setup(data, isPlayerTeam: false);
+            controller.GetComponent<MonsterTypeHandler>().Initialize(data.monsterType);
             spawnedMonsters.Add(newMonster);
         }
     }
@@ -60,6 +62,7 @@ public class MonsterSpawner : MonoBehaviour
         GameObject newMonster = Instantiate(monsterPrefab, enemySideGrid);
         MonsterController controller = newMonster.GetComponent<MonsterController>();
         controller.Setup(data, isPlayerTeam: false);
+        controller.GetComponent<MonsterTypeHandler>().Initialize(data.monsterType);
         spawnedMonsters.Add(newMonster);
     }
 
