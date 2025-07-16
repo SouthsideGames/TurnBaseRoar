@@ -210,6 +210,23 @@ public class MonsterController : MonoBehaviour
         UpdateHealthBar();
     }
 
+#region PASSIVE ABILITIES 
+
+    public void ApplyEndOfTurnPassive()
+    {
+        if (currentPassive == null) return;
+    
+        if (currentPassive.effectType == PassiveEffectType.HealSelfPerTurn)
+        {
+            int healAmount = Mathf.CeilToInt(data.baseHP * (currentPassive.value1 / 100f));
+            Heal(healAmount);
+            Debug.Log($"{data.monsterName} healed {healAmount} HP at end of turn (HealSelfPerTurn).");
+            BattlePanelManager.Instance.AppendCombatLog($"{data.monsterName} healed {healAmount} HP!");
+        }
+    }
+
+#endregion
+
 
     public void SetSlotIndex(int index) => slotIndex = index;
     public int GetSlotIndex() => slotIndex;
