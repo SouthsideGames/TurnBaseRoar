@@ -116,7 +116,7 @@ public class CombatSystem : MonoBehaviour
 
             foreach (var monster in playerMonsters.Concat(enemyMonsters))
             {
-                monster.ApplyEndOfTurnPassive();
+                monster.ApplyEndOfTurnPassive(playerMonsters, enemyMonsters);
             }
 
             currentTurn++;
