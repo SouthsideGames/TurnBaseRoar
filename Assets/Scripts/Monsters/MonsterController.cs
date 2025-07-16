@@ -209,7 +209,7 @@ public class MonsterController : MonoBehaviour
 
 #region PASSIVE ABILITIES 
 
-    public void ApplyEndOfTurnPassive()
+    public void ApplyEndOfTurnPassive(List<MonsterController> playerMonsters, List<MonsterController> enemyMonsters)
     {
         if (currentPassive == null) return;
     
@@ -220,8 +220,22 @@ public class MonsterController : MonoBehaviour
             Debug.Log($"{data.monsterName} healed {healAmount} HP at end of turn (HealSelfPerTurn).");
             BattlePanelManager.Instance.AppendCombatLog($"{data.monsterName} healed {healAmount} HP!");
         }
+        else if (currentPassive.effectType == PassiveEffectType.TeamHealPerTurn)
+        {
+            List<MonsterController> allies = isPlayer ? playerMonsters : enemyMonsters;
+    
+            foreach (var ally in allies)
+            {
+                if (ally == null || !ally.IsAlive()) continue;
+    
+                int healAmount = Mathf.CeilToInt(ally.data.baseHP * (currentPassive.value1 / 100f));
+                ally.Heal(healAmount);
+    
+                Debug.Log($"{data.monsterName} healed {ally.data.monsterName} for {healAmount} HP (TeamHealPerTurn).");
+                BattlePanelManager.Instance.AppendCombatLog($"{data.monsterName} heals {ally.data.monsterName} for {healAmount} HP!");
+            }
+        }
     }
-
 #endregion
 
 
