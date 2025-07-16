@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c8be3aa620cc4b7b82d2454db595388, type: 3}
+  m_Name: Alloy
+  m_EditorClassIdentifier: 
+  typeName: Alloy
+  description: Immune to all status effects.
+  flavorText: Forged to resist any corruption.
+  iconSprite: {fileID: 7233633939856873990, guid: 7d612bcb22f95414c9a5a008608c9a44, type: 3}
+  passiveEffect:
+    effectType: 0
+    value1: 0
+    value2: 0
+    statusEffect: {fileID: 0}

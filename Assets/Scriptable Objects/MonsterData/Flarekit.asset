@@ -14,15 +14,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   monsterID: Flarekit
   monsterName: Flarekit
-  type: 0
+  monsterType: {fileID: 11400000, guid: 0de6f388c8efff242883fb88d1ae55bb, type: 2}
   icon: {fileID: 21300000, guid: ac919f07269e642998b4325c348d6b0d, type: 3}
   baseHP: 100
   baseAttack: 20
   baseDefense: 10
   baseSpeed: 15
   attackName: Power Pop
-  successRate: 0.9
+  baseAccuracy: 0.9
+  baseStatusResist: 0.9
   critChance: 10
   critMultiplier: 2
+  critResist: 0
+  maxMana: 100
+  manaRegenPerTurn: 10
+  abilityManaCost: 50
+  abilityDescription: 
   evolutionLevel: 3
   evolutionForm: {fileID: 11400000, guid: 6ac4b76bbbad740abb0c891b3e9cda6e, type: 2}

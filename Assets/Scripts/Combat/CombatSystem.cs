@@ -15,6 +15,9 @@ public class CombatSystem : MonoBehaviour
     [SerializeField] private bool isWaitingForNextInput = false;
 
     private int currentTurn = 1;
+    private bool reverseSpeedOrder = false;
+
+
 
 
     private void Awake()
@@ -31,10 +34,8 @@ public class CombatSystem : MonoBehaviour
 
         currentTurn = 1;
 
-        // Clear old monsters
         monsterSpawner.ClearAllMonsters();
 
-        // Spawn new monsters for this wave
         monsterSpawner.SpawnPlayerMonsters(monsterManager.PlayerWavePicks.ToList());
         monsterSpawner.SpawnEnemyMonsters(monsterManager.EnemyWavePicks.ToList());
 
@@ -67,17 +68,39 @@ public class CombatSystem : MonoBehaviour
             }
 
             // 2️⃣ Build turn order
+
             List<MonsterController> turnOrder = new List<MonsterController>();
             turnOrder.AddRange(playerMonsters);
             turnOrder.AddRange(enemyMonsters);
 
-            turnOrder = turnOrder
-                .OrderByDescending(m => m.data.baseSpeed)
-                .ThenBy(x => Random.value)
-                .ToList();
+            reverseSpeedOrder = turnOrder.Any(
+                m => m.currentPassive != null && m.currentPassive.effectType == PassiveEffectType.ReverseSpeedOrder
+            );
+
+            if (reverseSpeedOrder)
+            {
+                Debug.Log("ReverseSpeedOrder active: Turn order will be reversed!");
+                battlePanelManager.AppendCombatLog("Turn order is reversed due to ReverseSpeedOrder!");
+            }
+
+            if (reverseSpeedOrder)
+            {
+                turnOrder = turnOrder
+                    .OrderBy(m => m.data.baseSpeed)
+                    .ThenBy(x => Random.value)
+                    .ToList();
+            }
+            else
+            {
+                turnOrder = turnOrder
+                    .OrderByDescending(m => m.data.baseSpeed)
+                    .ThenBy(x => Random.value)
+                    .ToList();
+            }
+
 
             // 3️⃣ Process turn order
-           battlePanelManager.AppendCombatLog($"--- Turn {currentTurn} ---");
+            battlePanelManager.AppendCombatLog($"--- Turn {currentTurn} ---");
 
             foreach (var attacker in turnOrder)
             {
@@ -117,8 +140,8 @@ public class CombatSystem : MonoBehaviour
             foreach (var monster in playerMonsters.Concat(enemyMonsters))
             {
                 monster.ApplyEndOfTurnPassive(playerMonsters, enemyMonsters);
-
                 monster.ProcessStatusEffect();
+                monster.ProcessUntargetable();
             }
 
             currentTurn++;
@@ -135,13 +158,15 @@ public class CombatSystem : MonoBehaviour
     {
         for (int i = startIndex; i < enemyList.Count; i++)
         {
-            if (enemyList[i] != null && enemyList[i].IsAlive())
+            if (enemyList[i] != null && enemyList[i].IsAlive() && enemyList[i].IsTargetable())
                 return enemyList[i];
         }
         return null;
     }
-    
-    public void SetAutoMode(bool isAuto) => isAutoMode = isAuto;
 
-    public void NextTurnPressed() =>isWaitingForNextInput = false;
+    public void SetAutoMode(bool isAuto) => isAutoMode = isAuto;
+    public void NextTurnPressed() => isWaitingForNextInput = false;
+    public List<MonsterController> GetPlayerMonsters() => MonsterSpawner.Instance.GetPlayerMonsters();
+    public List<MonsterController> GetEnemyMonsters() => MonsterSpawner.Instance.GetEnemyMonsters();
+
 }

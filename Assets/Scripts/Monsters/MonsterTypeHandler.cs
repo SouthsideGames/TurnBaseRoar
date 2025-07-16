@@ -2,17 +2,21 @@ using UnityEngine;
 
 public class MonsterTypeHandler : MonoBehaviour
 {
-    public TypeSO assignedType;
+    private TypeSO assignedType;
     private MonsterController controller;
 
-    private void Awake()
+    private void Awake() => controller = GetComponent<MonsterController>();
+    
+    public void Initialize()
     {
-        controller = GetComponent<MonsterController>();
-    }
+        if (controller == null || controller.data == null || controller.data.monsterType == null)
+        {
+            Debug.LogError("[MonsterTypeHandler] Missing MonsterDataSO or TypeSO!");
+            return;
+        }
 
-    public void Initialize(TypeSO type)
-    {
-        assignedType = type;
+        assignedType = controller.data.monsterType;
+
         ApplyPassive();
     }
 

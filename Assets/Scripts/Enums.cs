@@ -48,8 +48,9 @@ public enum PassiveEffectType
     UntargetableOnHit,
     DamageRamp,
     ReduceStatusResistance,
-    AoEHitWithRecoil,
+    AoeHitWithRecoil,
     ReverseSpeedOrder,
+    WyrmCleave,
     None
 }
 

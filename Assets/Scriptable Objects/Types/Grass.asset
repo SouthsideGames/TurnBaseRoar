@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c8be3aa620cc4b7b82d2454db595388, type: 3}
+  m_Name: Grass
+  m_EditorClassIdentifier: 
+  typeName: Grass
+  description: Heals all allies 2% HP each turn.
+  flavorText: Life spreads wherever it roots.
+  iconSprite: {fileID: -4816291737377331807, guid: 64b3e2be5eadf9f46ad80acb65799bd5, type: 3}
+  passiveEffect:
+    effectType: 1
+    value1: 2
+    value2: 0
+    statusEffect: {fileID: 0}

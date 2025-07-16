@@ -39,7 +39,7 @@ public class MonsterSpawner : MonoBehaviour
             MonsterController controller = newMonster.GetComponent<MonsterController>();
             controller.Setup(data, isPlayerTeam: true);
 
-            controller.GetComponent<MonsterTypeHandler>().Initialize(data.monsterType);
+            controller.GetComponent<MonsterTypeHandler>().Initialize();
 
             spawnedMonsters.Add(newMonster);
         }
@@ -52,7 +52,7 @@ public class MonsterSpawner : MonoBehaviour
             GameObject newMonster = Instantiate(monsterPrefab, enemySideGrid);
             MonsterController controller = newMonster.GetComponent<MonsterController>();
             controller.Setup(data, isPlayerTeam: false);
-            controller.GetComponent<MonsterTypeHandler>().Initialize(data.monsterType);
+            controller.GetComponent<MonsterTypeHandler>().Initialize();
             spawnedMonsters.Add(newMonster);
         }
     }
@@ -62,7 +62,7 @@ public class MonsterSpawner : MonoBehaviour
         GameObject newMonster = Instantiate(monsterPrefab, enemySideGrid);
         MonsterController controller = newMonster.GetComponent<MonsterController>();
         controller.Setup(data, isPlayerTeam: false);
-        controller.GetComponent<MonsterTypeHandler>().Initialize(data.monsterType);
+        controller.GetComponent<MonsterTypeHandler>().Initialize();
         spawnedMonsters.Add(newMonster);
     }
 

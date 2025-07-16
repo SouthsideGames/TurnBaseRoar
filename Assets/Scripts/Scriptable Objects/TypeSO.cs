@@ -1,13 +1,12 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "NewType", menuName = "Scriptable Objects/Monster/Type")]
+[CreateAssetMenu(fileName = "NewType", menuName = "Scriptable Objects/Type")]
 public class TypeSO : ScriptableObject
 {
     public string typeName;
     [TextArea] public string description;
     [TextArea] public string flavorText;
     public Sprite iconSprite;
-    public Color typeColor;
     public PassiveEffectData passiveEffect;
 }
 

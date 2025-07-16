@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c8be3aa620cc4b7b82d2454db595388, type: 3}
+  m_Name: Water
+  m_EditorClassIdentifier: 
+  typeName: Water
+  description: Heals self 5% HP each turn.
+  flavorText: Flowing and patient, water never yields.
+  iconSprite: {fileID: -2000666074116224600, guid: c7bb9e98326eaba428ff3b042a88efb6, type: 3}
+  passiveEffect:
+    effectType: 0
+    value1: 5
+    value2: 0
+    statusEffect: {fileID: 0}

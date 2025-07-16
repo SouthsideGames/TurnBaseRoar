@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c8be3aa620cc4b7b82d2454db595388, type: 3}
+  m_Name: Specter
+  m_EditorClassIdentifier: 
+  typeName: Specter
+  description: Becomes untargetable after taking damage.
+  flavorText: You cannot strike what is already gone.
+  iconSprite: {fileID: -5169118872110962341, guid: b7ad0bcd0ce7e5045b27c8841cd1021e, type: 3}
+  passiveEffect:
+    effectType: 10
+    value1: 1
+    value2: 0
+    statusEffect: {fileID: 0}

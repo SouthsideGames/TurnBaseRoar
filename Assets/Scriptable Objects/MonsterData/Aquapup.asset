@@ -14,15 +14,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   monsterID: aquapup
   monsterName: Aquapup
-  type: 1
+  monsterType: {fileID: 11400000, guid: a67b5f665b3b0464e85081d671ce7e62, type: 2}
   icon: {fileID: 21300000, guid: 885fa9cfb2c1643aab40f58b1d114a64, type: 3}
   baseHP: 500
   baseAttack: 10
   baseDefense: 100
   baseSpeed: 10
   attackName: Bubble
-  successRate: 0.9
+  baseAccuracy: 0.9
+  baseStatusResist: 0.9
   critChance: 10
   critMultiplier: 2
+  critResist: 0
+  maxMana: 100
+  manaRegenPerTurn: 10
+  abilityManaCost: 50
+  abilityDescription: 
   evolutionLevel: 0
   evolutionForm: {fileID: 0}

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c8be3aa620cc4b7b82d2454db595388, type: 3}
+  m_Name: Wyrm
+  m_EditorClassIdentifier: 
+  typeName: Wyrm
+  description: Hits all enemies but takes damage each turn.
+  flavorText: Power unmatched, even if self-destructive.
+  iconSprite: {fileID: 8587911041132959157, guid: 997266f4f9e481747910be4b95d9a1af, type: 3}
+  passiveEffect:
+    effectType: 15
+    value1: 5
+    value2: 0
+    statusEffect: {fileID: 0}
