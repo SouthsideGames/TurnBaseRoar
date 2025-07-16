@@ -114,6 +114,11 @@ public class CombatSystem : MonoBehaviour
                 }
             }
 
+            foreach (var monster in playerMonsters.Concat(enemyMonsters))
+            {
+                monster.ApplyEndOfTurnPassive();
+            }
+
             currentTurn++;
             yield return new WaitForSeconds(2.0f);
         }
