@@ -49,10 +49,7 @@ public class MonsterController : MonoBehaviour
             healthSlider.value = currentHP;
         }
 
-        if (currentPassive != null && currentPassive.effectType == PassiveEffectType.HealSelfPerTurn)
-        {
-            Heal((int)currentPassive.value1 * Time.deltaTime);
-        }
+        
     }
 
 
