@@ -36,9 +36,7 @@ public class WaveManager : MonoBehaviour
         battlePanelManager.UpdateTimer(timer);
 
         if (timer <= 0f || !HasLivingPlayerMonsters())
-        {
             EndWave();
-        }
     }
 
     public void ResetTimer()
@@ -54,22 +52,15 @@ public class WaveManager : MonoBehaviour
         IsWaveRunning = true;
         timer = waveDuration;
         battlePanelManager.UpdateTimer(timer);
+        ClearAllMonstersStatusEffects();
         SpawnEnemyWave();
     }
 
-    private bool HasLivingPlayerMonsters()
-    {
-        return MonsterSpawner.Instance.GetPlayerMonsters().Any(m => m.IsAlive());
-    }
+    private bool HasLivingPlayerMonsters() => MonsterSpawner.Instance.GetPlayerMonsters().Any(m => m.IsAlive());
 
 
     private void SpawnEnemyWave()
     {
-        Debug.Log("WaveManager: Spawning enemy wave...");
-
-        // This is where you'd decide which enemies appear.
-        // For now, let's simulate 3 random enemy monsters:
-
         for (int i = 0; i < 3; i++)
         {
             MonsterDataSO enemyMonster = monsterLibrary.GetRandomMonster();
@@ -95,6 +86,15 @@ public class WaveManager : MonoBehaviour
         }
     }
 
+    private void ClearAllMonstersStatusEffects()
+    {
+        foreach (var monster in MonsterSpawner.Instance.GetPlayerMonsters())
+            monster.ClearStatusEffect();
+
+        foreach (var monster in MonsterSpawner.Instance.GetEnemyMonsters())
+            monster.ClearStatusEffect();
+    }
+
 
     public void RegisterEnemyKill()
     {
@@ -102,9 +102,6 @@ public class WaveManager : MonoBehaviour
         Debug.Log($"WaveManager: Enemies killed this wave = {enemiesKilled}");
     }
 
-    public int GetEnemiesKilled()
-    {
-        return enemiesKilled;
-    }
+    public int GetEnemiesKilled() => enemiesKilled;
 
 }

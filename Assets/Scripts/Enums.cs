@@ -55,10 +55,10 @@ public enum PassiveEffectType
 
 public enum StatusEffectType
 {
-    DamageOverTime,
+    DamageOverTurn,
     Freeze,
     Burn,
-    HealOverTime,
+    HealOverTurn,
     DefenseDown,
     Other
 }

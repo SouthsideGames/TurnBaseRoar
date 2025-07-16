@@ -9,4 +9,5 @@ public class StatusEffectSO : ScriptableObject
     public int duration;
     public StatusEffectType effectType;
     public float value;
+    public Color statusColor = Color.white;
 }

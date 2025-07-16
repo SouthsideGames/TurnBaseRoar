@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 
 public class MonsterController : MonoBehaviour
@@ -20,9 +21,13 @@ public class MonsterController : MonoBehaviour
     [SerializeField] private int slotIndex;
     private bool isImmuneToStatus = false;
     private bool isImmuneToCrit = false;
-
+    
+    private StatusEffectSO activeStatusEffect;
+    private int statusTurnsRemaining;
     private int currentHP;
     private int currentMana;
+    private Color defaultNameColor;
+
   
     public void Setup(MonsterDataSO monsterData, bool isPlayerTeam)
     {
@@ -40,7 +45,11 @@ public class MonsterController : MonoBehaviour
             typeImage.sprite = data.monsterType.iconSprite;
 
         if (nameText != null)
+        {
             nameText.text = data.monsterName;
+            defaultNameColor = nameText.color;
+        }
+
 
         // Set up health slider
         if (healthSlider != null)
@@ -117,7 +126,19 @@ public class MonsterController : MonoBehaviour
         );
 
         target.TakeDamage(Mathf.RoundToInt(damage), isCrit);
+
+        if (currentPassive != null && currentPassive.effectType == PassiveEffectType.BurnOnHit)
+        {
+            float chance = currentPassive.value1;
+            if (Random.value < (chance / 100f))
+            {
+                target.ApplyStatusEffect(currentPassive.statusEffect);
+                Debug.Log($"{data.monsterName} inflicted {currentPassive.statusEffect.statusName} on {target.data.monsterName}!");
+                BattlePanelManager.Instance.AppendCombatLog($"{data.monsterName} inflicted {currentPassive.statusEffect.statusName} on {target.data.monsterName}!");
+            }
+        }
     }
+
 
 
     private void UseAbility(MonsterController target)
@@ -235,9 +256,90 @@ public class MonsterController : MonoBehaviour
                 BattlePanelManager.Instance.AppendCombatLog($"{data.monsterName} heals {ally.data.monsterName} for {healAmount} HP!");
             }
         }
+
     }
 #endregion
 
+#region STATUS EFFECTS
+    
+    public void ApplyStatusEffect(StatusEffectSO newStatus)
+    {
+        if (isImmuneToStatus)
+        {
+            Debug.Log($"{data.monsterName} is immune to status effects!");
+            BattlePanelManager.Instance.AppendCombatLog($"{data.monsterName} is immune to status effects!");
+            return;
+        }
+
+        if (activeStatusEffect != null)
+        {
+            Debug.Log($"{data.monsterName} already has {activeStatusEffect.statusName} and cannot be inflicted with {newStatus.statusName}.");
+            BattlePanelManager.Instance.AppendCombatLog($"{data.monsterName} resisted {newStatus.statusName} because it's already afflicted!");
+            return;
+        }
+
+        activeStatusEffect = newStatus;
+        statusTurnsRemaining = newStatus.duration;
+
+        // ✅ NEW: Change name text color to status color
+        if (nameText != null)
+            nameText.color = newStatus.statusColor;
+
+        Debug.Log($"{data.monsterName} is now afflicted with {newStatus.statusName} for {statusTurnsRemaining} turns.");
+        BattlePanelManager.Instance.AppendCombatLog($"{data.monsterName} is now afflicted with {newStatus.statusName} for {statusTurnsRemaining} turns!");
+    }
+
+
+
+    public void ProcessStatusEffect()
+    {
+        if (activeStatusEffect == null) return;
+
+        // Apply effect logic
+        switch (activeStatusEffect.effectType)
+        {
+            case StatusEffectType.DamageOverTurn:
+                int dotDamage = Mathf.CeilToInt(activeStatusEffect.value);
+                TakeDamage(dotDamage);
+                Debug.Log($"{data.monsterName} took {dotDamage} damage from {activeStatusEffect.statusName}!");
+                BattlePanelManager.Instance.AppendCombatLog($"{data.monsterName} takes {dotDamage} damage from {activeStatusEffect.statusName}!");
+                break;
+
+            case StatusEffectType.Freeze:
+                // Example: no damage, but skip turn. We'll hook this into Attack() later.
+                break;
+
+            // Add other effect types here.
+        }
+
+        // Decrement duration
+        statusTurnsRemaining--;
+
+        if (statusTurnsRemaining <= 0)
+        {
+            ClearStatusEffect();
+        }
+    }
+
+    public void ClearStatusEffect()
+    {
+        if (activeStatusEffect != null)
+        {
+            Debug.Log($"{data.monsterName} is no longer affected by {activeStatusEffect.statusName}!");
+            BattlePanelManager.Instance.AppendCombatLog($"{data.monsterName} is no longer affected by {activeStatusEffect.statusName}!");
+        }
+
+        activeStatusEffect = null;
+        statusTurnsRemaining = 0;
+
+       
+        if (nameText != null)
+            nameText.color = defaultNameColor;
+    }
+
+
+
+#endregion
 
     public void SetSlotIndex(int index) => slotIndex = index;
     public int GetSlotIndex() => slotIndex;
