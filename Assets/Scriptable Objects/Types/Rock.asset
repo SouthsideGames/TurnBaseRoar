@@ -15,7 +15,7 @@ MonoBehaviour:
   typeName: Rock
   description: Immune to critical hits.
   flavorText: Unmoving. Unbreakable.
-  iconSprite: {fileID: 0}
+  iconSprite: {fileID: 21300000, guid: fc1ecc76947469346b7fc5b110cdd92c, type: 3}
   passiveEffect:
     effectType: 7
     value1: 0

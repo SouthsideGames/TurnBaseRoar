@@ -5,8 +5,8 @@ public class WaveManager : MonoBehaviour
 {
     public static WaveManager Instance { get; private set; }
 
-    [Header("Settings")]
-    [SerializeField] private float waveDuration = 30f;
+    [Header("Global Timer Settings")]
+    [SerializeField] private float totalGameTime = 300f; // 5 minutes
 
     [Header("References")]
     [SerializeField] private MonsterSpawner monsterSpawner;
@@ -14,9 +14,8 @@ public class WaveManager : MonoBehaviour
 
     [SerializeField] private MonsterLibrary monsterLibrary;
     public bool IsWaveRunning { get; private set; }
-    public bool PauseTimer { get; set; } = false;
-
-    private float timer;
+    private bool isTimerRunning = false;
+    private float timeRemaining;
     private int enemiesKilled = 0;
 
     private void Awake()
@@ -27,36 +26,43 @@ public class WaveManager : MonoBehaviour
             Destroy(gameObject);
     }
 
+    private void Start()
+    {
+        timeRemaining = totalGameTime;
+        battlePanelManager.UpdateTimer(timeRemaining);
+    }
+
 
     private void Update()
     {
-        if (!IsWaveRunning || PauseTimer) return;
+        if (!isTimerRunning) return;
 
-        timer -= Time.deltaTime;
-        battlePanelManager.UpdateTimer(timer);
+        timeRemaining -= Time.deltaTime;
+        battlePanelManager.UpdateTimer(timeRemaining);
 
-        if (timer <= 0f || !HasLivingPlayerMonsters())
+        if (timeRemaining <= 0f)
+        {
+            timeRemaining = 0f;
+            isTimerRunning = false;
+            EndGameDueToTime();
+            return;
+        }
+
+        if (IsWaveRunning && !HasLivingEnemyMonsters())
+        {
             EndWave();
-    }
-
-    public void ResetTimer()
-    {
-        timer = waveDuration;
-        IsWaveRunning = false;
-        battlePanelManager.UpdateTimer(timer);
+        }
     }
 
     public void StartWave()
     {
         Debug.Log("WaveManager: Starting wave!");
         IsWaveRunning = true;
-        timer = waveDuration;
-        battlePanelManager.UpdateTimer(timer);
+        isTimerRunning = true;
+
         ClearAllMonstersStatusEffects();
         SpawnEnemyWave();
     }
-
-    private bool HasLivingPlayerMonsters() => MonsterSpawner.Instance.GetPlayerMonsters().Any(m => m.IsAlive());
 
 
     private void SpawnEnemyWave()
@@ -68,21 +74,29 @@ public class WaveManager : MonoBehaviour
         }
     }
 
+    private void EndGameDueToTime()
+    {
+        Debug.Log("WaveManager: Time’s up!");
+        IsWaveRunning = false;
+
+        BattleManager.Instance.EnterGameOver(RewardSystem.Instance.TotalCoinsEarned);
+    }
+
     public void EndWave()
     {
-        Debug.Log("WaveManager: Wave time over!");
+        Debug.Log("WaveManager: Enemy team defeated!");
 
         IsWaveRunning = false;
+        PauseGlobalTimer();
 
         int coinsEarned = RewardSystem.Instance.CalculateWaveRewards(enemiesKilled);
         enemiesKilled = 0;
 
         BattleManager.Instance.EnterResultsPhase(coinsEarned);
-        
+
         if (!HasLivingPlayerMonsters())
         {
             BattleManager.Instance.EnterGameOver(RewardSystem.Instance.TotalCoinsEarned);
-            return;
         }
     }
 
@@ -95,13 +109,12 @@ public class WaveManager : MonoBehaviour
             monster.ClearStatusEffect();
     }
 
-
-    public void RegisterEnemyKill()
-    {
-        enemiesKilled++;
-        Debug.Log($"WaveManager: Enemies killed this wave = {enemiesKilled}");
-    }
-
+    public void RegisterEnemyKill() => enemiesKilled++;
     public int GetEnemiesKilled() => enemiesKilled;
+    public void PauseGlobalTimer() => isTimerRunning = false;
+    public void ResumeGlobalTimer() => isTimerRunning = true;
+    public float GetTimeRemaining() => timeRemaining;
+    private bool HasLivingEnemyMonsters() => MonsterSpawner.Instance.GetEnemyMonsters().Any(m => m.IsAlive());
+    private bool HasLivingPlayerMonsters() => MonsterSpawner.Instance.GetPlayerMonsters().Any(m => m.IsAlive());
 
 }

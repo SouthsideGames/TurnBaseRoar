@@ -49,6 +49,7 @@ public class BattlePanelManager : MonoBehaviour
     [SerializeField] private GameObject draftCardPrefab;
 
     private bool isAuto = false;
+    private bool isTimerFlashing = false;
 
     private void Awake()
     {
@@ -82,7 +83,7 @@ public class BattlePanelManager : MonoBehaviour
         BattleManager.Instance.RestartGame();
     }
 
-   public void ShowDraftPhaseUI()
+    public void ShowDraftPhaseUI()
     {
         draftBar.SetActive(true);
         startWaveButton.gameObject.SetActive(false);
@@ -93,9 +94,9 @@ public class BattlePanelManager : MonoBehaviour
 
         ClearCombatLog();
 
-        HideDraftContentRoot(); 
-        ShowStartDraftButton(); 
-        ShowDraftText("Press Start Draft to see who goes first!"); 
+        HideDraftContentRoot();
+        ShowStartDraftButton();
+        ShowDraftText("Press Start Draft to see who goes first!");
     }
 
     private void OnStartDraftPressed()
@@ -145,7 +146,24 @@ public class BattlePanelManager : MonoBehaviour
 
     public void UpdateTimer(float timeLeft)
     {
-        timerText.text = $"{Mathf.CeilToInt(timeLeft)}s";
+        timeLeft = Mathf.Max(0f, timeLeft); // Clamp negative time
+
+        int minutes = Mathf.FloorToInt(timeLeft / 60f);
+        int seconds = Mathf.FloorToInt(timeLeft % 60f);
+
+        timerText.text = $"🕒 {minutes:00}:{seconds:00}";
+
+        // 🔴 Trigger red pulsing when under 10 seconds
+        if (timeLeft <= 10f && !isTimerFlashing)
+        {
+            isTimerFlashing = true;
+            StartTimerFlashEffect();
+        }
+        else if (timeLeft > 10f && isTimerFlashing)
+        {
+            isTimerFlashing = false;
+            StopTimerFlashEffect();
+        }
     }
 
     // Example button callbacks
@@ -280,9 +298,9 @@ public class BattlePanelManager : MonoBehaviour
         }
     }
 
-   public void HideAllPanels()
+    public void HideAllPanels()
     {
-        
+
         if (rewardSummary != null) rewardSummary.SetActive(false);
         if (gameoverPanel != null) gameoverPanel.SetActive(false);
         if (combatBar != null) combatBar.SetActive(false);
@@ -291,5 +309,20 @@ public class BattlePanelManager : MonoBehaviour
         if (finishButton != null) finishButton.gameObject.SetActive(false);
         if (timerText != null) timerText.gameObject.SetActive(false);
     }
+    
+    private void StartTimerFlashEffect()
+    {
+        // Flash red color
+        LeanTween.colorText(timerText.rectTransform, Color.red, 0.25f).setLoopPingPong();
+        LeanTween.scale(timerText.rectTransform, Vector3.one * 1.2f, 0.25f).setLoopPingPong();
+    }
+
+    private void StopTimerFlashEffect()
+    {
+        LeanTween.cancel(timerText.gameObject);
+        timerText.color = Color.white;
+        timerText.rectTransform.localScale = Vector3.one;
+    }
+
 
 }

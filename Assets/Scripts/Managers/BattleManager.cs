@@ -43,8 +43,6 @@ public class BattleManager : MonoBehaviour
         battlePanelManager.ShowDraftPhaseUI();
         battlePanelManager.UpdateWaveNumber(currentWave);
         battlePanelManager.UpdateCoins(playerCoins);
-
-        waveManager.ResetTimer();
     }
 
 

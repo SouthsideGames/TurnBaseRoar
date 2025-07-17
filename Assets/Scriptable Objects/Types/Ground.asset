@@ -15,7 +15,7 @@ MonoBehaviour:
   typeName: Ground
   description: Attacks reduce enemy defense.
   flavorText: Crushing pressure from the earth itself.
-  iconSprite: {fileID: 0}
+  iconSprite: {fileID: 21300000, guid: e52daf5d4ef5c09418a667e6c2513a2a, type: 3}
   passiveEffect:
     effectType: 5
     value1: 10

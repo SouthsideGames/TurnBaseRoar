@@ -17,9 +17,6 @@ public class CombatSystem : MonoBehaviour
     private int currentTurn = 1;
     private bool reverseSpeedOrder = false;
 
-
-
-
     private void Awake()
     {
         if (Instance == null)
@@ -33,7 +30,6 @@ public class CombatSystem : MonoBehaviour
         Debug.Log("CombatSystem: Preparing battle...");
 
         currentTurn = 1;
-
         monsterSpawner.ClearAllMonsters();
 
         monsterSpawner.SpawnPlayerMonsters(monsterManager.PlayerWavePicks.ToList());
@@ -41,6 +37,7 @@ public class CombatSystem : MonoBehaviour
 
         Debug.Log("CombatSystem: Spawns complete. Starting turn loop...");
 
+        WaveManager.Instance.ResumeGlobalTimer();
         StartCoroutine(CombatRoutine());
     }
 
@@ -60,6 +57,7 @@ public class CombatSystem : MonoBehaviour
                 .Where(m => m != null && m.IsAlive())
                 .ToList();
 
+            // 🛑 End wave early if a team is wiped out
             if (playerMonsters.Count == 0 || enemyMonsters.Count == 0)
             {
                 Debug.Log("CombatSystem: No opponents left alive.");
@@ -73,39 +71,24 @@ public class CombatSystem : MonoBehaviour
             turnOrder.AddRange(playerMonsters);
             turnOrder.AddRange(enemyMonsters);
 
-            reverseSpeedOrder = turnOrder.Any(
-                m => m.currentPassive != null && m.currentPassive.effectType == PassiveEffectType.ReverseSpeedOrder
-            );
+            reverseSpeedOrder = turnOrder.Any(m =>
+                m.currentPassive != null && m.currentPassive.effectType == PassiveEffectType.ReverseSpeedOrder);
 
             if (reverseSpeedOrder)
             {
-                Debug.Log("ReverseSpeedOrder active: Turn order will be reversed!");
                 battlePanelManager.AppendCombatLog("Turn order is reversed due to ReverseSpeedOrder!");
-            }
-
-            if (reverseSpeedOrder)
-            {
-                turnOrder = turnOrder
-                    .OrderBy(m => m.data.baseSpeed)
-                    .ThenBy(x => Random.value)
-                    .ToList();
+                turnOrder = turnOrder.OrderBy(m => m.data.baseSpeed).ThenBy(x => Random.value).ToList();
             }
             else
             {
-                turnOrder = turnOrder
-                    .OrderByDescending(m => m.data.baseSpeed)
-                    .ThenBy(x => Random.value)
-                    .ToList();
+                turnOrder = turnOrder.OrderByDescending(m => m.data.baseSpeed).ThenBy(x => Random.value).ToList();
             }
 
-
-            // 3️⃣ Process turn order
             battlePanelManager.AppendCombatLog($"--- Turn {currentTurn} ---");
 
             foreach (var attacker in turnOrder)
             {
                 if (!WaveManager.Instance.IsWaveRunning) yield break;
-
                 if (!attacker.IsAlive()) continue;
 
                 var enemyList = attacker.isPlayer ? enemyMonsters : playerMonsters;
@@ -118,7 +101,7 @@ public class CombatSystem : MonoBehaviour
                 else
                 {
                     Debug.Log($"{attacker.data.monsterName} had no valid target and skipped turn.");
-                    BattlePanelManager.Instance.AppendCombatLog($"{attacker.data.monsterName} had no valid target and skipped turn.");
+                    battlePanelManager.AppendCombatLog($"{attacker.data.monsterName} had no valid target and skipped turn.");
                 }
 
                 yield return new WaitForSeconds(0.5f);
@@ -126,14 +109,12 @@ public class CombatSystem : MonoBehaviour
                 if (!isAutoMode)
                 {
                     isWaitingForNextInput = true;
-                    WaveManager.Instance.PauseTimer = true;
+                    WaveManager.Instance.PauseGlobalTimer();
 
                     while (isWaitingForNextInput)
-                    {
                         yield return null;
-                    }
 
-                    WaveManager.Instance.PauseTimer = false;
+                    WaveManager.Instance.ResumeGlobalTimer();
                 }
             }
 
@@ -148,10 +129,9 @@ public class CombatSystem : MonoBehaviour
             yield return new WaitForSeconds(2.0f);
         }
 
-        Debug.Log("CombatSystem: Wave timer ended, ending combat.");
+        Debug.Log("CombatSystem: Ending combat.");
         WaveManager.Instance.EndWave();
     }
-
 
 
     private MonsterController FindValidTarget(List<MonsterController> enemyList, int startIndex)
